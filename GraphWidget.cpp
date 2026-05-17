@@ -2,7 +2,9 @@
 #include "GraphWidget.h"
 #include "QOpenGLWidget"
 #include <QKeyEvent>
+#include <QMouseEvent>
 #include <QWheelEvent>
+#include <QScrollBar>
 
 namespace inv {
 
@@ -12,24 +14,12 @@ GraphWidget::GraphWidget(QWidget *parent) : QGraphicsView(parent) {
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-    // --- 关键代码：设置拖拽模式 ---
-    setDragMode(QGraphicsView::ScrollHandDrag);
 
-    // 可选：设置光标样式，提升用户体验
-    setCursor(Qt::OpenHandCursor); // 默认显示张开的手
+    setCursor(Qt::OpenHandCursor);
 
-    // --- 性能优化开关 ---
-    // 1. 关闭视口更新时的抗锯齿调整（提升平移/缩放速度）
     setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, true);
-
-    // 2. 不保存 Painter 状态（提升绘制速度）
     setOptimizationFlag(QGraphicsView::DontSavePainterState, true);
-
-    // 3. 使用间接绘制（配合缓存更高效）
     setOptimizationFlag(QGraphicsView::IndirectPainting, true);
-
-    // 4. 设置视口更新模式为“智能”或“最小”
-    // 避免拖拽时重绘整个窗口
     setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
 
     // QOpenGLWidget *glWidget = new QOpenGLWidget;
@@ -37,7 +27,6 @@ GraphWidget::GraphWidget(QWidget *parent) : QGraphicsView(parent) {
 }
 
 void GraphWidget::wheelEvent(QWheelEvent *event) {
-    // 实现缩放
     double scaleFactor = 1.15;
     if (event->delta() > 0) {
         scale(scaleFactor, scaleFactor);
@@ -48,16 +37,46 @@ void GraphWidget::wheelEvent(QWheelEvent *event) {
 
 void GraphWidget::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_Delete) {
-        // 删除选中的节点或连线
         QList<QGraphicsItem *> items = scene()->selectedItems();
         for (QGraphicsItem *item : items) {
-            // 这里需要做类型判断并清理
             scene()->removeItem(item);
             delete item;
         }
     } else {
         QGraphicsView::keyPressEvent(event);
     }
+}
+
+void GraphWidget::mousePressEvent(QMouseEvent *event) {
+    QGraphicsItem *item = itemAt(event->pos());
+    if (item) {
+        // Clicked on a node or other item — let Qt handle item move
+        QGraphicsView::mousePressEvent(event);
+    } else {
+        // Clicked on empty space — start manual panning
+        m_isPanning = true;
+        m_lastPanPoint = event->pos();
+        setCursor(Qt::ClosedHandCursor);
+    }
+}
+
+void GraphWidget::mouseMoveEvent(QMouseEvent *event) {
+    if (m_isPanning) {
+        QPoint delta = event->pos() - m_lastPanPoint;
+        m_lastPanPoint = event->pos();
+        horizontalScrollBar()->setValue(horizontalScrollBar()->value() - delta.x());
+        verticalScrollBar()->setValue(verticalScrollBar()->value() - delta.y());
+    } else {
+        QGraphicsView::mouseMoveEvent(event);
+    }
+}
+
+void GraphWidget::mouseReleaseEvent(QMouseEvent *event) {
+    if (m_isPanning) {
+        m_isPanning = false;
+        setCursor(Qt::OpenHandCursor);
+    }
+    QGraphicsView::mouseReleaseEvent(event);
 }
 
 } // namespace inv

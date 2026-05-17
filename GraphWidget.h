@@ -13,10 +13,15 @@ class GraphWidget : public QGraphicsView {
   GraphWidget(QWidget *parent = nullptr);
 
  protected:
-  // 缩放事件
   void wheelEvent(QWheelEvent *event) override;
-  // 键盘删除事件
   void keyPressEvent(QKeyEvent *event) override;
+  void mousePressEvent(QMouseEvent *event) override;
+  void mouseMoveEvent(QMouseEvent *event) override;
+  void mouseReleaseEvent(QMouseEvent *event) override;
+
+ private:
+  bool m_isPanning = false;
+  QPoint m_lastPanPoint;
 };
 
 }  // namespace inv
