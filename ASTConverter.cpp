@@ -130,11 +130,11 @@ void AstConverter::LayoutNode(AstNode *root, QPointF aPos) {
 
 void AstConverter::NodeClicked(Node *aNode) {
     auto node = m_nodeToAstMap[aNode]->mNode;
-    // emit SendMessage(m_nodeToAstMap[aNode]->GetNodeString());
+    emit SendMessage(m_nodeToAstMap[aNode]->GetNodeString());
 
-    auto rule = m_nodeToAstMap[aNode]->mNode->mRulePtr;
-    std::string res = GetRuleString(rule);
-    emit SendMessage(res);
+    // auto rule = m_nodeToAstMap[aNode]->mNode->mRulePtr;
+    // std::string res = GetRuleString(rule);
+    // emit SendMessage(res);
     // if (rule && rule->Type() == WsfParseRule::cALTERNATE) {
     //     WsfParseAlternate *altenate = static_cast<WsfParseAlternate *>(rule);
     //     short index = 1;

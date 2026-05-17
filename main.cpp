@@ -424,11 +424,11 @@ int main(int argc, char *argv[]) {
 
     // sensor type
 
-    // QApplication app(argc, argv);
+    QApplication app(argc, argv);
 
-    // inv::MainWindow win;
-    // win.SetASTTree(res);
-    // win.show();
+    inv::MainWindow win;
+    win.SetASTTree(res);
+    win.show();
 
-    // return app.exec();
+    return app.exec();
 }
